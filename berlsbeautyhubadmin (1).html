@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Berls Beauty Hub — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#F4B8CC; --pink-deep:#e88aab; --black:#1A1A1A; --white:#FFFFFF; --soft:#FCE8F0;
+    --gray:#6b6b6b; --line:#eee; --green:#2e7d4f; --red:#c0392b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'DM Sans',sans-serif; background:var(--soft); color:var(--black);}
+  h1,h2,h3{font-family:'Playfair Display',serif;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .shell{display:flex; min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:230px; background:var(--black); color:#fff; flex-shrink:0;
+    position:fixed; top:0; left:0; bottom:0; overflow-y:auto; z-index:50;
+    transition:transform .25s;
+  }
+  .sidebar .brand{padding:22px 18px; border-bottom:1px solid #333;}
+  .sidebar .brand h1{color:var(--pink); font-size:1.25rem;}
+  .sidebar .brand span{font-size:.72rem; color:#bbb; letter-spacing:.05em;}
+  .navlist{list-style:none; padding:10px 0;}
+  .navlist button{
+    width:100%; text-align:left; background:none; border:none; color:#ddd;
+    padding:11px 18px; font-size:.92rem; display:flex; gap:10px; align-items:center;
+  }
+  .navlist button.active{background:var(--pink); color:var(--black); font-weight:700;}
+  .navlist button:hover{background:#2a2a2a;}
+  .navlist .ic{font-size:1rem;}
+
+  .menubtn{display:none; position:fixed; top:14px; left:14px; z-index:60; background:var(--black); color:#fff; border:none; border-radius:8px; width:40px; height:40px; font-size:1.2rem;}
+
+  /* Main */
+  .main{margin-left:230px; flex:1; padding:24px 28px; max-width:1200px;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; flex-wrap:wrap; gap:10px;}
+  .topbar h2{font-size:1.5rem;}
+  .badge-pill{background:var(--pink); padding:6px 14px; border-radius:20px; font-size:.8rem; font-weight:700;}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .grid-cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:24px;}
+  .card{background:#fff; border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  .card .num{font-size:1.7rem; font-weight:700; font-family:'Playfair Display',serif;}
+  .card .lbl{color:var(--gray); font-size:.82rem; margin-top:4px;}
+
+  .panel{background:#fff; border-radius:14px; padding:20px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  .panel h3{margin-bottom:14px; font-size:1.1rem;}
+
+  table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  th,td{padding:10px 8px; border-bottom:1px solid var(--line); text-align:left;}
+  th{color:var(--gray); font-weight:700; font-size:.78rem; text-transform:uppercase;}
+  tr:hover{background:#fafafa;}
+  .tag{padding:3px 10px; border-radius:12px; font-size:.72rem; font-weight:700;}
+  .tag.green{background:#e3f5ea; color:var(--green);}
+  .tag.red{background:#fdeaea; color:var(--red);}
+  .tag.gray{background:#eee; color:var(--gray);}
+  .tag.pink{background:var(--soft); color:var(--pink-deep);}
+
+  .btn{background:var(--black); color:#fff; border:none; padding:9px 16px; border-radius:8px; font-size:.85rem; font-weight:700;}
+  .btn.pink{background:var(--pink); color:var(--black);}
+  .btn.outline{background:none; border:1px solid var(--black); color:var(--black);}
+  .btn-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+
+  .quickgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:24px;}
+  .quickgrid button{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center; font-size:.82rem; font-weight:600;}
+  .quickgrid button:hover{border-color:var(--pink);}
+  .quickgrid .qic{font-size:1.4rem; display:block; margin-bottom:6px;}
+
+  .tabs-sub{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .tabs-sub button{padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:#fff; font-size:.82rem;}
+  .tabs-sub button.active{background:var(--black); color:#fff; border-color:var(--black);}
+
+  .avatar{width:34px; height:34px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:8px;}
+  .photo-sm{width:46px; height:46px; border-radius:8px; object-fit:cover;}
+
+  .ai-box{background:linear-gradient(135deg,var(--soft),#fff); border:1px dashed var(--pink-deep); border-radius:14px; padding:18px;}
+  .ai-box h4{margin-bottom:8px;}
+  .ai-list{margin-top:10px; padding-left:18px; font-size:.88rem; line-height:1.7;}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:100; padding:16px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff; border-radius:14px; padding:22px; max-width:480px; width:100%; max-height:85vh; overflow-y:auto;}
+  .modal h3{margin-bottom:14px;}
+  .modal .row{margin-bottom:10px; font-size:.88rem;}
+  .modal .row b{display:block; color:var(--gray); font-size:.74rem; text-transform:uppercase; margin-bottom:2px;}
+  .modal .close{float:right; background:none; border:none; font-size:1.2rem;}
+
+  .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--black); color:#fff; padding:12px 22px; border-radius:30px; font-size:.88rem; display:none; z-index:200;}
+
+  @media(max-width:880px){
+    .sidebar{transform:translateX(-100%);}
+    .sidebar.open{transform:translateX(0);}
+    .main{margin-left:0; padding:70px 16px 30px;}
+    .menubtn{display:block;}
+  }
+</style>
+</head>
+<body>
+
+<button class="menubtn" id="menubtn">☰</button>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <h1>Berls Admin</h1>
+      <span>Beauty Hub Dashboard</span>
+    </div>
+    <ul class="navlist" id="navlist">
+      <li><button data-go="overview" class="active"><span class="ic">📊</span>Overview</button></li>
+      <li><button data-go="bookings"><span class="ic">📅</span>Bookings</button></li>
+      <li><button data-go="catalog"><span class="ic">💇🏾‍♀️</span>Service Catalog</button></li>
+      <li><button data-go="staff"><span class="ic">👥</span>Staff / Workers</button></li>
+      <li><button data-go="crm"><span class="ic">🗂️</span>Client CRM</button></li>
+      <li><button data-go="loyalty"><span class="ic">⭐</span>Loyalty Program</button></li>
+      <li><button data-go="codes"><span class="ic">🏷️</span>Discount Codes</button></li>
+      <li><button data-go="giftcards"><span class="ic">🎁</span>Gift Cards</button></li>
+      <li><button data-go="campaigns"><span class="ic">📣</span>Campaigns</button></li>
+      <li><button data-go="analytics"><span class="ic">📈</span>Analytics</button></li>
+      <li><button data-go="waitlist"><span class="ic">⏳</span>Waitlist</button></li>
+      <li><button data-go="settings"><span class="ic">⚙️</span>Settings</button></li>
+    </ul>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <section class="view active" id="view-overview">
+      <div class="topbar"><h2>Overview</h2><span class="badge-pill">Today · 27 Jun</span></div>
+      <div class="grid-cards">
+        <div class="card"><div class="num">14</div><div class="lbl">Today's Bookings</div></div>
+        <div class="card"><div class="num">GHS 2,340</div><div class="lbl">Today's Revenue</div></div>
+        <div class="card"><div class="num">GHS 48,900</div><div class="lbl">Month Revenue</div></div>
+        <div class="card"><div class="num">22</div><div class="lbl">New Clients (Month)</div></div>
+        <div class="card"><div class="num">3</div><div class="lbl">Pending Custom Quotes</div></div>
+        <div class="card"><div class="num">5</div><div class="lbl">Birthday Codes (Month)</div></div>
+        <div class="card"><div class="num">8</div><div class="lbl">Referral Codes (Month)</div></div>
+      </div>
+
+      <div class="quickgrid">
+        <button data-go="catalog"><span class="qic">➕</span>Add Service</button>
+        <button data-go="bookings"><span class="qic">📅</span>View Bookings</button>
+        <button data-go="campaigns"><span class="qic">📣</span>Send Campaign</button>
+        <button data-go="giftcards"><span class="qic">🎁</span>Generate Gift Card</button>
+        <button data-go="waitlist"><span class="qic">⏳</span>View Waitlist</button>
+      </div>
+
+      <div class="panel">
+        <h3>Recent Bookings</h3>
+        <table>
+          <tr><th>Client</th><th>Service</th><th>Worker</th><th>Time</th><th>Status</th></tr>
+          <tr><td>Ama Owusu</td><td>Knotless Braids</td><td>Linda</td><td>10:00am</td><td><span class="tag green">Confirmed</span></td></tr>
+          <tr><td>Esi Mensah</td><td>Wig Install</td><td>Joyce</td><td>11:30am</td><td><span class="tag pink">Pending</span></td></tr>
+          <tr><td>Naa Adjei</td><td>Loc Retwist</td><td>Linda</td><td>1:00pm</td><td><span class="tag green">Confirmed</span></td></tr>
+          <tr><td>Yaa Boateng</td><td>Custom Style</td><td>—</td><td>3:00pm</td><td><span class="tag gray">Quote Pending</span></td></tr>
+        </table>
+      </div>
+
+      <div class="ai-box">
+        <h4>✨ AI Insights</h4>
+        <p style="font-size:.88rem;color:var(--gray)">Get recommendations based on your booking and revenue trends.</p>
+        <button class="btn pink" id="btn-ai-insights" style="margin-top:10px">Get Insights</button>
+        <ul class="ai-list" id="ai-insights-list" style="display:none"></ul>
+      </div>
+    </section>
+
+    <!-- BOOKINGS -->
+    <section class="view" id="view-bookings">
+      <div class="topbar"><h2>Bookings Management</h2></div>
+      <div class="tabs-sub">
+        <button class="active">All</button><button>Upcoming</button><button>Completed</button><button>No-show</button><button>Custom Quotes</button>
+      </div>
+      <div class="panel">
+        <table id="bookings-table">
+          <tr><th>Client</th><th>Service</th><th>Worker</th><th>Date</th><th>Status</th><th></th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- CATALOG -->
+    <section class="view" id="view-catalog">
+      <div class="topbar"><h2>Service Catalog</h2><button class="btn pink">+ Add Service</button></div>
+      <div class="tabs-sub">
+        <button class="active">Categories &amp; Styles</button><button>Add-ons</button><button>Products</button>
+      </div>
+      <div class="panel">
+        <table id="catalog-table">
+          <tr><th>Photo</th><th>Name</th><th>Category</th><th>Price</th><th>Duration</th><th>Active</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- STAFF -->
+    <section class="view" id="view-staff">
+      <div class="topbar"><h2>Staff / Workers</h2><button class="btn pink">+ Add Worker</button></div>
+      <div class="panel">
+        <table id="staff-table">
+          <tr><th>Photo</th><th>Name</th><th>Services</th><th>Working Hours</th><th>This Month</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- CRM -->
+    <section class="view" id="view-crm">
+      <div class="topbar"><h2>Client CRM</h2></div>
+      <input type="text" placeholder="Search clients by name, phone, email..." style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;font-size:.9rem">
+      <div class="panel">
+        <table id="crm-table">
+          <tr><th>Client</th><th>Tier</th><th>Visits</th><th>Spend</th><th>Tags</th><th>No-shows</th></tr>
+        </table>
+      </div>
+      <div class="ai-box">
+        <h4>✨ AI Suggestions for selected client</h4>
+        <p style="font-size:.88rem;color:var(--gray)">Click a client row to get personalized style recommendations and win-back messaging.</p>
+      </div>
+    </section>
+
+    <!-- LOYALTY -->
+    <section class="view" id="view-loyalty">
+      <div class="topbar"><h2>Loyalty Program</h2></div>
+      <div class="grid-cards">
+        <div class="card"><div class="num">Bronze</div><div class="lbl">0 – 199 pts · 10% bday</div></div>
+        <div class="card"><div class="num">Silver</div><div class="lbl">200 – 499 pts · 10% bday</div></div>
+        <div class="card"><div class="num">Gold</div><div class="lbl">500 – 999 pts · 12% bday</div></div>
+        <div class="card"><div class="num">VIP</div><div class="lbl">1000+ pts · 15% bday</div></div>
+      </div>
+      <div class="panel">
+        <h3>Earning Rules</h3>
+        <table>
+          <tr><td>1 point per GHS 1 spent</td><td>Active</td></tr>
+          <tr><td>50 pts on first booking</td><td>Active</td></tr>
+          <tr><td>100 pts per successful referral</td><td>Active</td></tr>
+          <tr><td>25 pts per verified review</td><td>Active</td></tr>
+          <tr><td>Double points in birthday month</td><td>Active</td></tr>
+        </table>
+      </div>
+      <div class="panel"><h3>Redemption</h3><p>100 points = GHS 10 discount</p></div>
+    </section>
+
+    <!-- CODES -->
+    <section class="view" id="view-codes">
+      <div class="topbar"><h2>Discount Codes</h2><button class="btn pink">+ Create Code</button></div>
+      <div class="panel">
+        <table id="codes-table">
+          <tr><th>Code</th><th>Type</th><th>Value</th><th>Issued To</th><th>Status</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- GIFT CARDS -->
+    <section class="view" id="view-giftcards">
+      <div class="topbar"><h2>Gift Cards</h2><button class="btn pink" id="btn-gen-gc">+ Generate Card</button></div>
+      <div class="panel">
+        <table id="gc-table">
+          <tr><th>Code</th><th>Purchaser</th><th>Recipient</th><th>Value</th><th>Balance</th><th>Status</th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- CAMPAIGNS -->
+    <section class="view" id="view-campaigns">
+      <div class="topbar"><h2>Campaigns</h2></div>
+      <div class="panel">
+        <h3>New Campaign</h3>
+        <div class="row" style="margin-bottom:10px"><label style="font-size:.82rem;color:var(--gray)">Segment</label><br>
+          <select style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;margin-top:4px">
+            <option>All (with marketing consent)</option><option>New clients</option><option>Regular</option><option>Lapsed</option><option>VIP</option><option>At-risk</option>
+          </select>
+        </div>
+        <input placeholder="Subject" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px">
+        <textarea placeholder="Message body" rows="4" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px"></textarea>
+        <button class="btn pink" id="btn-send-campaign">Send Campaign</button>
+      </div>
+      <div class="panel">
+        <h3>Campaign History</h3>
+        <table>
+          <tr><th>Name</th><th>Sent</th><th>Open Rate</th></tr>
+          <tr><td>June Birthday Reminder</td><td>312</td><td>41%</td></tr>
+          <tr><td>VIP Loyalty Boost</td><td>58</td><td>63%</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section class="view" id="view-analytics">
+      <div class="topbar"><h2>Revenue &amp; Analytics</h2><button class="btn outline">Export CSV</button></div>
+      <div class="grid-cards">
+        <div class="card"><div class="num">GHS 48,900</div><div class="lbl">Month Revenue</div></div>
+        <div class="card"><div class="num">Braids</div><div class="lbl">Top Service</div></div>
+        <div class="card"><div class="num">Sat</div><div class="lbl">Busiest Day</div></div>
+        <div class="card"><div class="num">62%</div><div class="lbl">Returning Clients</div></div>
+      </div>
+      <div class="panel"><h3>Top Services This Month</h3>
+        <table>
+          <tr><th>Service</th><th>Bookings</th><th>Revenue</th></tr>
+          <tr><td>Knotless Braids</td><td>34</td><td>GHS 13,600</td></tr>
+          <tr><td>Wig Install</td><td>21</td><td>GHS 9,450</td></tr>
+          <tr><td>Loc Retwist</td><td>18</td><td>GHS 5,400</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- WAITLIST -->
+    <section class="view" id="view-waitlist">
+      <div class="topbar"><h2>Waitlist</h2></div>
+      <div class="panel">
+        <table id="waitlist-table">
+          <tr><th>Client</th><th>Service</th><th>Date</th><th>Time Slot</th><th></th></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="view-settings">
+      <div class="topbar"><h2>Settings</h2></div>
+      <div class="panel">
+        <h3>Business</h3>
+        <div class="row"><b>Booking fee %</b>20%</div>
+        <div class="row"><b>No-show threshold</b>2 missed appointments</div>
+        <div class="row"><b>Gift card minimum</b>GHS 20</div>
+        <div class="row"><b>Review email schedule</b>7:00pm / 10:00am</div>
+        <div class="row"><b>Chatbot</b><span class="tag green">Enabled</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-body"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+
+  var staff = [
+    {name:'Linda Asante', photo:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&q=70', services:'Braids, Locs', hours:'Tue–Sat 9–6', bookings:34},
+    {name:'Joyce Tetteh', photo:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=70', services:'Wigs, Colour', hours:'Mon–Fri 10–7', bookings:27},
+    {name:'Abena Frimpong', photo:'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=70', services:'Natural Styles', hours:'Wed–Sun 9–5', bookings:19}
+  ];
+
+  var bookings = [
+    {client:'Ama Owusu', service:'Knotless Braids', worker:'Linda Asante', date:'27 Jun', status:'Confirmed'},
+    {client:'Esi Mensah', service:'Wig Install', worker:'Joyce Tetteh', date:'27 Jun', status:'Pending'},
+    {client:'Naa Adjei', service:'Loc Retwist', worker:'Linda Asante', date:'28 Jun', status:'Confirmed'},
+    {client:'Yaa Boateng', service:'Custom Style', worker:'Unassigned', date:'28 Jun', status:'Quote Pending'},
+    {client:'Adwoa Sarpong', service:'Silk Press', worker:'Abena Frimpong', date:'29 Jun', status:'Completed'},
+    {client:'Efua Danso', service:'Box Braids', worker:'Linda Asante', date:'25 Jun', status:'No-show'}
+  ];
+
+  var catalog = [
+    {photo:'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=120&q=70', name:'Knotless Braids', cat:'Braids', price:'GHS 350+', dur:'4h', active:true},
+    {photo:'https://images.unsplash.com/photo-1626954079673-9c4b9a35dbcf?w=120&q=70', name:'Wig Install & Style', cat:'Wigs', price:'GHS 450', dur:'2h', active:true},
+    {photo:'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=120&q=70', name:'Loc Retwist', cat:'Locs', price:'GHS 220', dur:'1.5h', active:true},
+    {photo:'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=120&q=70', name:'Silk Press', cat:'Natural', dur:'1.5h', price:'GHS 180', active:false}
+  ];
+
+  var crm = [
+    {name:'Ama Owusu', tier:'Gold', visits:14, spend:'GHS 5,200', tags:'VIP', noshow:0},
+    {name:'Esi Mensah', tier:'Silver', visits:6, spend:'GHS 2,100', tags:'Regular', noshow:0},
+    {name:'Yaa Boateng', tier:'Bronze', visits:1, spend:'GHS 350', tags:'New', noshow:0},
+    {name:'Efua Danso', tier:'Bronze', visits:3, spend:'GHS 900', tags:'At Risk', noshow:2}
+  ];
+
+  var codes = [
+    {code:'WELCOME10', type:'Promo', value:'10%', issued:'All new clients', status:'Active'},
+    {code:'BDAY-AMA27', type:'Birthday', value:'12%', issued:'Ama Owusu', status:'Active'},
+    {code:'REF-ESI100', type:'Referral', value:'10%', issued:'Esi Mensah', status:'Used'}
+  ];
+
+  var giftcards = [
+    {code:'GFT-7X29KQ', purchaser:'Kwame Asare', recipient:'Naa Adjei', value:'GHS 200', balance:'GHS 200', status:'Active'},
+    {code:'GFT-3M81LP', purchaser:'Admin', recipient:'—', value:'GHS 100', balance:'GHS 40', status:'Partially Used'}
+  ];
+
+  var waitlist = [
+    {client:'Adwoa Sarpong', service:'Wig Install', date:'29 Jun', slot:'2:00pm'},
+    {client:'Efua Danso', service:'Knotless Braids', date:'30 Jun', slot:'10:00am'}
+  ];
+
+  function tagClass(s){
+    s = s.toLowerCase();
+    if(s.indexOf('confirm')>-1 || s.indexOf('active')>-1 || s.indexOf('complet')>-1) return 'green';
+    if(s.indexOf('no-show')>-1) return 'red';
+    if(s.indexOf('pending')>-1 || s.indexOf('quote')>-1) return 'pink';
+    return 'gray';
+  }
+
+  function renderBookings(){
+    var t = document.getElementById('bookings-table');
+    var rows = '<tr><th>Client</th><th>Service</th><th>Worker</th><th>Date</th><th>Status</th><th></th></tr>';
+    bookings.forEach(function(b,i){
+      rows += '<tr><td>'+b.client+'</td><td>'+b.service+'</td><td>'+b.worker+'</td><td>'+b.date+'</td>'+
+        '<td><span class="tag '+tagClass(b.status)+'">'+b.status+'</span></td>'+
+        '<td><button class="btn outline" data-view-booking="'+i+'" style="padding:5px 12px;font-size:.78rem">View</button></td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderCatalog(){
+    var t = document.getElementById('catalog-table');
+    var rows = '<tr><th>Photo</th><th>Name</th><th>Category</th><th>Price</th><th>Duration</th><th>Active</th></tr>';
+    catalog.forEach(function(c){
+      rows += '<tr><td><img class="photo-sm" src="'+c.photo+'" alt=""></td><td>'+c.name+'</td><td>'+c.cat+'</td><td>'+c.price+'</td><td>'+c.dur+'</td>'+
+        '<td><span class="tag '+(c.active?'green':'gray')+'">'+(c.active?'Active':'Inactive')+'</span></td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderStaff(){
+    var t = document.getElementById('staff-table');
+    var rows = '<tr><th>Photo</th><th>Name</th><th>Services</th><th>Working Hours</th><th>This Month</th></tr>';
+    staff.forEach(function(s){
+      rows += '<tr><td><img class="avatar" src="'+s.photo+'" alt=""></td><td>'+s.name+'</td><td>'+s.services+'</td><td>'+s.hours+'</td><td>'+s.bookings+' bookings</td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderCrm(){
+    var t = document.getElementById('crm-table');
+    var rows = '<tr><th>Client</th><th>Tier</th><th>Visits</th><th>Spend</th><th>Tags</th><th>No-shows</th></tr>';
+    crm.forEach(function(c){
+      rows += '<tr><td>'+c.name+'</td><td>'+c.tier+'</td><td>'+c.visits+'</td><td>'+c.spend+'</td>'+
+        '<td><span class="tag '+tagClass(c.tags)+'">'+c.tags+'</span></td>'+
+        '<td>'+(c.noshow>=2 ? '<span class="tag red">'+c.noshow+'</span>' : c.noshow)+'</td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderCodes(){
+    var t = document.getElementById('codes-table');
+    var rows = '<tr><th>Code</th><th>Type</th><th>Value</th><th>Issued To</th><th>Status</th></tr>';
+    codes.forEach(function(c){
+      rows += '<tr><td>'+c.code+'</td><td>'+c.type+'</td><td>'+c.value+'</td><td>'+c.issued+'</td><td><span class="tag '+tagClass(c.status)+'">'+c.status+'</span></td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderGc(){
+    var t = document.getElementById('gc-table');
+    var rows = '<tr><th>Code</th><th>Purchaser</th><th>Recipient</th><th>Value</th><th>Balance</th><th>Status</th></tr>';
+    giftcards.forEach(function(g){
+      rows += '<tr><td>'+g.code+'</td><td>'+g.purchaser+'</td><td>'+g.recipient+'</td><td>'+g.value+'</td><td>'+g.balance+'</td><td><span class="tag '+tagClass(g.status)+'">'+g.status+'</span></td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function renderWaitlist(){
+    var t = document.getElementById('waitlist-table');
+    var rows = '<tr><th>Client</th><th>Service</th><th>Date</th><th>Time Slot</th><th></th></tr>';
+    waitlist.forEach(function(w,i){
+      rows += '<tr><td>'+w.client+'</td><td>'+w.service+'</td><td>'+w.date+'</td><td>'+w.slot+'</td>'+
+        '<td><button class="btn pink" data-notify="'+i+'" style="padding:5px 12px;font-size:.78rem">Notify</button></td></tr>';
+    });
+    t.innerHTML = rows;
+  }
+
+  function showToast(msg){
+    var el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(function(){ el.style.display='none'; }, 2600);
+  }
+
+  function openModal(html){
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  var views = ['overview','bookings','catalog','staff','crm','loyalty','codes','giftcards','campaigns','analytics','waitlist','settings'];
+  function go(name){
+    views.forEach(function(v){
+      var el = document.getElementById('view-'+v);
+      if(el) el.classList.toggle('active', v===name);
+    });
+    document.querySelectorAll('#navlist button').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-go')===name);
+    });
+    document.getElementById('sidebar').classList.remove('open');
+    window.scrollTo(0,0);
+  }
+
+  document.addEventListener('click', function(e){
+    var nav = e.target.closest('[data-go]');
+    if(nav){ go(nav.getAttribute('data-go')); return; }
+
+    if(e.target.id === 'menubtn'){
+      document.getElementById('sidebar').classList.toggle('open');
+      return;
+    }
+
+    var vb = e.target.closest('[data-view-booking]');
+    if(vb){
+      var b = bookings[+vb.getAttribute('data-view-booking')];
+      openModal(
+        '<button class="close" data-close>×</button>'+
+        '<h3>'+b.client+'</h3>'+
+        '<div class="row"><b>Service</b>'+b.service+'</div>'+
+        '<div class="row"><b>Worker</b>'+b.worker+'</div>'+
+        '<div class="row"><b>Date</b>'+b.date+'</div>'+
+        '<div class="row"><b>Status</b>'+b.status+'</div>'+
+        '<div class="row"><b>Photo/Video Consent</b>YES</div>'+
+        '<div class="btn-row" style="margin-top:14px">'+
+          '<button class="btn pink" data-complete="'+bookings.indexOf(b)+'">Mark Completed</button>'+
+          '<button class="btn outline" data-noshow="'+bookings.indexOf(b)+'">Flag No-show</button>'+
+        '</div>'
+      );
+      return;
+    }
+
+    var cmp = e.target.closest('[data-complete]');
+    if(cmp){ bookings[+cmp.getAttribute('data-complete')].status='Completed'; renderBookings(); closeModal(); showToast('Booking marked as completed'); return; }
+    var ns = e.target.closest('[data-noshow]');
+    if(ns){ bookings[+ns.getAttribute('data-noshow')].status='No-show'; renderBookings(); closeModal(); showToast('Client flagged as no-show'); return; }
+
+    var notify = e.target.closest('[data-notify]');
+    if(notify){ showToast('Client notified of opening'); return; }
+
+    if(e.target.closest('[data-close]') || e.target.id === 'modal-overlay'){ closeModal(); return; }
+
+    if(e.target.id === 'btn-gen-gc'){
+      openModal(
+        '<button class="close" data-close>×</button>'+
+        '<h3>Generate Gift Card</h3>'+
+        '<div class="row"><b>Value (GHS)</b><input type="number" value="100" style="width:100%;padding:8px;border:1px solid #eee;border-radius:6px"></div>'+
+        '<div class="row"><b>Recipient Email (optional)</b><input type="email" style="width:100%;padding:8px;border:1px solid #eee;border-radius:6px"></div>'+
+        '<button class="btn pink" data-confirm-gc style="margin-top:10px">Generate &amp; Email</button>'
+      );
+      return;
+    }
+    if(e.target.closest('[data-confirm-gc]')){
+      giftcards.unshift({code:'GFT-'+Math.random().toString(36).slice(2,8).toUpperCase(), purchaser:'Admin', recipient:'—', value:'GHS 100', balance:'GHS 100', status:'Active'});
+      renderGc(); closeModal(); showToast('Gift card generated and emailed');
+      return;
+    }
+
+    if(e.target.id === 'btn-send-campaign'){ showToast('Campaign queued for sending'); return; }
+
+    if(e.target.id === 'btn-ai-insights'){
+      var list = document.getElementById('ai-insights-list');
+      list.innerHTML =
+        '<li>Braids bookings are up 22% this month — consider promoting braid add-ons to recent wig clients.</li>'+
+        '<li>Saturdays are your busiest day; Wednesdays have 40% lower volume — try a midweek promo code.</li>'+
+        '<li>4 VIP clients haven\'t booked in 45+ days — trigger a win-back campaign this week.</li>'+
+        '<li>Custom quote requests are taking 18hrs avg to confirm — faster turnaround could reduce drop-off.</li>';
+      list.style.display = 'block';
+      showToast('AI insights generated');
+      return;
+    }
+  });
+
+  renderBookings();
+  renderCatalog();
+  renderStaff();
+  renderCrm();
+  renderCodes();
+  renderGc();
+  renderWaitlist();
+
+})();
+</script>
+</body>
+</html>
